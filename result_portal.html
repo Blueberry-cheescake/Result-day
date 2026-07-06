@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Result Portal — The Day My Results Came Out</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #f5f3ee;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    color: #2c2c2a;
+  }
+  .portal-box {
+    background: #ffffff;
+    border: 0.5px solid #b4b2a9;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 480px;
+    padding: 2rem 2.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .portal-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 0.5px solid #d3d1c7;
+  }
+  .portal-gov {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: #888780;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .portal-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #2c2c2a;
+    letter-spacing: 0.05em;
+  }
+  .portal-subtitle {
+    font-size: 11px;
+    color: #888780;
+    margin-top: 0.25rem;
+  }
+  .field-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 0.5px solid #d3d1c7;
+    font-size: 12px;
+  }
+  .field-label { color: #888780; letter-spacing: 0.05em; }
+  .field-value { color: #5f5e5a; letter-spacing: 0.08em; }
+  .field-value.masked { letter-spacing: 0.2em; color: #888780; }
+
+  .captcha-section {
+    margin-top: 1.25rem;
+    padding: 1rem;
+    background: #f1efe8;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 4px;
+  }
+  .captcha-label {
+    font-size: 10px;
+    color: #888780;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.6rem;
+  }
+  .captcha-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0.75rem;
+  }
+  .captcha-text {
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 0.35em;
+    color: #2c2c2a;
+    background: #f5f3ee;
+    border: 0.5px solid #b4b2a9;
+    border-radius: 4px;
+    padding: 0.4rem 0.8rem;
+    flex: 1;
+    text-align: center;
+    user-select: none;
+    font-family: inherit;
+    position: relative;
+  }
+  .captcha-text::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 3px,
+      rgba(0,0,0,0.06) 3px,
+      rgba(0,0,0,0.06) 4px
+    );
+    border-radius: 4px;
+    pointer-events: none;
+  }
+  .captcha-refresh {
+    background: none;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    cursor: pointer;
+    color: #888780;
+    font-size: 14px;
+    transition: all 0.15s ease;
+  }
+  .captcha-refresh:hover { color: #5f5e5a; border-color: #b4b2a9; }
+  .captcha-input-row { display: flex; gap: 8px; align-items: center; }
+  .captcha-input {
+    flex: 1;
+    font-family: inherit;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    padding: 0.4rem 0.6rem;
+    background: #ffffff;
+    border: 0.5px solid #b4b2a9;
+    border-radius: 4px;
+    color: #2c2c2a;
+    text-transform: uppercase;
+  }
+  .captcha-input:focus { outline: none; border-color: #5f5e5a; }
+  .captcha-input.error { border-color: #a32d2d; color: #a32d2d; }
+  .captcha-error {
+    font-size: 10px;
+    color: #a32d2d;
+    letter-spacing: 0.05em;
+    margin-top: 0.4rem;
+    min-height: 1em;
+  }
+
+  .btn-check {
+    width: 100%;
+    margin-top: 1.25rem;
+    padding: 0.65rem;
+    font-family: inherit;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    background: #f1efe8;
+    color: #2c2c2a;
+    border: 0.5px solid #b4b2a9;
+    border-radius: 4px;
+    transition: background 0.15s ease;
+  }
+  .btn-check:hover { background: #e8e6df; }
+  .btn-check:disabled { color: #888780; cursor: default; background: #f1efe8; }
+
+  .status-section { margin-top: 1.5rem; }
+  .status-label {
+    font-size: 11px;
+    color: #888780;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+  .progress-bar-bg {
+    height: 4px;
+    background: #e8e6df;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 0.4rem;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: #5f5e5a;
+    border-radius: 2px;
+    transition: width 0.35s ease;
+  }
+  .progress-text { font-size: 11px; color: #888780; text-align: right; }
+  .status-msg {
+    font-size: 12px;
+    color: #5f5e5a;
+    margin-top: 0.75rem;
+    min-height: 1.2em;
+    letter-spacing: 0.03em;
+  }
+
+  .result-reveal {
+    display: none;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 0.5px solid #d3d1c7;
+    text-align: center;
+    animation: fadeIn 0.6s ease;
+  }
+  .result-reveal.show { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .result-number {
+    font-size: 36px;
+    font-weight: 500;
+    color: #2c2c2a;
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+  .result-unit {
+    font-size: 11px;
+    color: #888780;
+    letter-spacing: 0.1em;
+    margin-top: 0.3rem;
+  }
+  .result-caption {
+    font-size: 13px;
+    color: #5f5e5a;
+    margin-top: 1rem;
+    line-height: 1.7;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+  }
+
+  .reset-link {
+    display: none;
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 11px;
+    color: #888780;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: color 0.15s ease;
+  }
+  .reset-link:hover { color: #5f5e5a; }
+  .reset-link.show { display: block; }
+</style>
+</head>
+<body>
+
+<div class="portal-box" role="main" aria-label="Result portal simulation">
+  <div class="portal-header">
+    <div class="portal-gov">Government of India</div>
+    <div class="portal-title">RESULT PORTAL</div>
+    <div class="portal-subtitle">National Examination Board</div>
+  </div>
+
+  <div class="field-row">
+    <span class="field-label">Candidate ID</span>
+    <span class="field-value masked">** ** ** ** **</span>
+  </div>
+  <div class="field-row">
+    <span class="field-label">Examination</span>
+    <span class="field-value">[ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ]</span>
+  </div>
+  <div class="field-row">
+    <span class="field-label">Date</span>
+    <span class="field-value">Result Day</span>
+  </div>
+
+  <div class="captcha-section" id="captchaSection">
+    <div class="captcha-label">SECURITY VERIFICATION</div>
+    <div class="captcha-display">
+      <div class="captcha-text" id="captchaDisplay">——</div>
+      <button class="captcha-refresh" onclick="refreshCaptcha()" title="Refresh captcha" aria-label="Refresh captcha">↺</button>
+    </div>
+    <div class="captcha-input-row">
+      <input class="captcha-input" id="captchaInput" type="text" maxlength="6" placeholder="enter code above" autocomplete="off" aria-label="Captcha code" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter') checkCaptchaAndLoad()" />
+    </div>
+    <div class="captcha-error" id="captchaError"></div>
+  </div>
+
+  <button class="btn-check" id="checkBtn" onclick="checkCaptchaAndLoad()">[ CHECK RESULT ]</button>
+
+  <div class="status-section" id="statusSection" style="display:none;">
+    <div class="status-label">STATUS</div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressPct">0%</div>
+    <div class="status-msg" id="statusMsg">Connecting to server...</div>
+  </div>
+
+  <div class="result-reveal" id="resultReveal">
+    <div class="result-number" id="resultNumber"></div>
+    <div class="result-unit" id="resultUnit"></div>
+    <div class="result-caption" id="resultCaption"></div>
+  </div>
+
+  <div class="reset-link" id="resetLink" onclick="resetPortal()">↺ check another result</div>
+</div>
+
+<script>
+const scenarios = [
+  { number: "47,832", unit: "All India Rank — JEE Mains", caption: "Not good enough for government college. Not bad enough to stop trying." },
+  { number: "89.4%", unit: "Class XII Board Result", caption: "The page loaded. The room went quiet. Nobody said anything for a long time." },
+  { number: "312 / 720", unit: "NEET Score", caption: "Below cutoff. The number sat there on the screen. It didn't feel real." },
+  { number: "98.6", unit: "Percentile — JEE Advanced", caption: "I got in. I sat alone in my room and waited to feel happy." },
+  { number: "61.2%", unit: "B.Tech Semester IV", caption: "My parents asked. I said it was fine. Neither of us believed it." },
+  { number: "2,14,567", unit: "All India Rank — NEET", caption: "There were over two lakh people ahead of me. I kept refreshing anyway." },
+  { number: "FAIL", unit: "Mathematics — Supplementary Exam", caption: "One subject. One mark short. The whole year, again." },
+  { number: "95.8%", unit: "Class X CBSE", caption: "Everyone said congratulations. I smiled. Inside, the next exam had already begun." },
+  { number: "72.4%", unit: "Class XII State Board", caption: "Enough for a college. Not the one they'd printed on the fridge." },
+  { number: "Rank 1", unit: "District Topper", caption: "The photographers came. I posed. I hadn't slept in three days." }
+];
+
+const messages = [
+  "Connecting to server...",
+  "Fetching candidate records...",
+  "Verifying examination data...",
+  "Processing result...",
+  "Almost done..."
+];
+
+const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+let currentCaptcha = '';
+let lastResultIdx = -1;
+let animating = false;
+
+function generateCaptcha() {
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+}
+
+function refreshCaptcha() {
+  currentCaptcha = generateCaptcha();
+  document.getElementById('captchaDisplay').textContent = currentCaptcha;
+  const input = document.getElementById('captchaInput');
+  input.value = '';
+  input.classList.remove('error');
+  document.getElementById('captchaError').textContent = '';
+}
+
+function checkCaptchaAndLoad() {
+  if (animating) return;
+  const input = document.getElementById('captchaInput');
+  const entered = input.value.trim().toUpperCase();
+
+  if (entered === '') {
+    input.classList.add('error');
+    document.getElementById('captchaError').textContent = 'Please enter the security code.';
+    return;
+  }
+
+  if (entered !== currentCaptcha) {
+    input.classList.add('error');
+    document.getElementById('captchaError').textContent = 'Incorrect code. A new one has been generated.';
+    refreshCaptcha();
+    return;
+  }
+
+  document.getElementById('captchaError').textContent = '';
+  const cs = document.getElementById('captchaSection');
+  cs.style.opacity = '0.4';
+  cs.style.pointerEvents = 'none';
+  startLoading();
+}
+
+function getNextScenario() {
+  let idx;
+  do {
+    idx = Math.floor(Math.random() * scenarios.length);
+  } while (idx === lastResultIdx && scenarios.length > 1);
+  lastResultIdx = idx;
+  return scenarios[idx];
+}
+
+function startLoading() {
+  animating = true;
+  const btn = document.getElementById('checkBtn');
+  btn.disabled = true;
+  btn.textContent = '[ PLEASE WAIT ]';
+
+  const statusSection = document.getElementById('statusSection');
+  statusSection.style.display = 'block';
+
+  const fill = document.getElementById('progressFill');
+  const pct = document.getElementById('progressPct');
+  const msg = document.getElementById('statusMsg');
+
+  let progress = 0;
+  let msgIdx = 0;
+
+  const interval = setInterval(() => {
+    progress += Math.random() * 11 + 4;
+    if (progress > 100) progress = 100;
+
+    fill.style.width = progress + '%';
+    pct.textContent = Math.round(progress) + '%';
+
+    const newMsgIdx = Math.min(Math.floor(progress / 22), messages.length - 1);
+    if (newMsgIdx !== msgIdx) {
+      msgIdx = newMsgIdx;
+      msg.textContent = messages[msgIdx];
+    }
+
+    if (progress >= 100) {
+      clearInterval(interval);
+      msg.textContent = 'Result found.';
+
+      setTimeout(() => {
+        const s = getNextScenario();
+        document.getElementById('resultNumber').textContent = s.number;
+        document.getElementById('resultUnit').textContent = s.unit;
+        document.getElementById('resultCaption').textContent = s.caption;
+        document.getElementById('resultReveal').classList.add('show');
+        document.getElementById('resetLink').classList.add('show');
+        btn.style.display = 'none';
+      }, 600);
+    }
+  }, 180);
+}
+
+function resetPortal() {
+  animating = false;
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('progressPct').textContent = '0%';
+  document.getElementById('statusMsg').textContent = 'Connecting to server...';
+  document.getElementById('statusSection').style.display = 'none';
+  document.getElementById('resultReveal').classList.remove('show');
+  document.getElementById('resetLink').classList.remove('show');
+
+  const btn = document.getElementById('checkBtn');
+  btn.style.display = 'block';
+  btn.disabled = false;
+  btn.textContent = '[ CHECK RESULT ]';
+
+  const cs = document.getElementById('captchaSection');
+  cs.style.opacity = '1';
+  cs.style.pointerEvents = 'auto';
+  refreshCaptcha();
+}
+
+refreshCaptcha();
+</script>
+
+</body>
+</html>
